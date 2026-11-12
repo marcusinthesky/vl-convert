@@ -25,7 +25,7 @@ jobs:
           git archive aceea6d5d46b9aeacf3ee824ae2d53a6fd9f9e56 | gzip > "$RUNNER_TEMP/cleanup/base.tar.gz"
           cd "$RUNNER_TEMP/cleanup"
           npm init -y
-          npm install --save-exact eslint@9.39.1 prettier@3.6.2 acorn@8.15.0
+          npm install --save-exact eslint@9.39.1 prettier@3.6.2 esbuild@0.25.12 acorn@8.15.0
           tar -czf analysis-tools.tar.gz node_modules package.json package-lock.json
           rm -rf node_modules package.json package-lock.json
       - uses: actions/upload-artifact@v4
