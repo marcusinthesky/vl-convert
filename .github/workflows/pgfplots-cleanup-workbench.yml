@@ -1,0 +1,35 @@
+name: PGFPlots cleanup workbench
+on:
+  push:
+    branches: [maintenance/pgfplots-cleanup]
+    paths: ['.github/workflows/pgfplots-cleanup-workbench.yml']
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 071c3c53585537b486e1c99afbb9509aef39d48f
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Capture source and development-only analysis tools
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/cleanup"
+          git archive HEAD | gzip > "$RUNNER_TEMP/cleanup/head.tar.gz"
+          git fetch --depth=1 origin aceea6d5d46b9aeacf3ee824ae2d53a6fd9f9e56
+          git archive aceea6d5d46b9aeacf3ee824ae2d53a6fd9f9e56 | gzip > "$RUNNER_TEMP/cleanup/base.tar.gz"
+          cd "$RUNNER_TEMP/cleanup"
+          npm init -y
+          npm install --save-exact eslint@9.39.1 prettier@3.6.2 acorn@8.15.0
+          tar -czf analysis-tools.tar.gz node_modules package.json package-lock.json
+          rm -rf node_modules package.json package-lock.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pgfplots-cleanup-inputs
+          path: ${{ runner.temp }}/cleanup
+          retention-days: 3
