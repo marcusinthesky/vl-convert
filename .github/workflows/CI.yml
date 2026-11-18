@@ -88,6 +88,33 @@ jobs:
       - name: Check for clippy warnings
         run: cargo clippy --all -- -D warnings
 
+  tikz-renderer:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Test the adapter and real Vega scenegraphs offline
+        working-directory: vl-convert-rs
+        run: node --loader ./tests/vendor-loader.mjs --test tests/tikz_context.test.mjs tests/tikz_render.test.mjs
+      - name: Install TeX for output verification
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-extra texlive-pictures lmodern poppler-utils
+      - name: Compile representative figures
+        working-directory: vl-convert-rs
+        run: node --loader ./tests/vendor-loader.mjs tests/tikz/generate.mjs "$RUNNER_TEMP/tikz-evidence" --compile
+      - name: Upload SVG and compiled TeX evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: tikz-rendering-evidence
+          path: ${{ runner.temp }}/tikz-evidence
+          if-no-files-found: ignore
+
   cargo-bundle-license:
     runs-on: ubuntu-latest
     steps:
@@ -136,6 +163,8 @@ jobs:
       - name: Run CLI tests
         run: |
           cargo test -p vl-convert -- --test-threads=1
+      - name: Run TikZ HTTP tests
+        run: cargo test -p vl-convert-server --test test_tikz -- --test-threads=1
 
 
       - name: Upload test failures
