@@ -30,6 +30,9 @@ Await functions marked `async`. Functions without that marker return directly an
 ```{autodoc2-object} vl_convert.asyncio.vegalite_to_svg
 ```
 
+```{autodoc2-object} vl_convert.asyncio.vegalite_to_tikz
+```
+
 ```{autodoc2-object} vl_convert.asyncio.vegalite_to_html
 ```
 
@@ -54,6 +57,9 @@ Await functions marked `async`. Functions without that marker return directly an
 ```
 
 ```{autodoc2-object} vl_convert.asyncio.vega_to_svg
+```
+
+```{autodoc2-object} vl_convert.asyncio.vega_to_tikz
 ```
 
 ```{autodoc2-object} vl_convert.asyncio.vega_to_html

@@ -201,6 +201,7 @@ __all__ = [
     "vega_to_png",
     "vega_to_scenegraph",
     "vega_to_svg",
+    "vega_to_tikz",
     "vega_to_url",
     "vegalite_fonts",
     "vegalite_to_html",
@@ -209,6 +210,7 @@ __all__ = [
     "vegalite_to_png",
     "vegalite_to_scenegraph",
     "vegalite_to_svg",
+    "vegalite_to_tikz",
     "vegalite_to_url",
     "vegalite_to_vega",
     "get_vega_version",
@@ -824,6 +826,39 @@ def vega_to_svg(
     """
     ...
 
+def vega_to_tikz(
+    vg_spec: VlSpec,
+    *,
+    format_locale: FormatLocale | None = None,
+    time_format_locale: TimeFormatLocale | None = None,
+    vega_plugin: str | None = None,
+    text_mode: Literal["plain", "raw"] = "plain",
+    google_fonts: list[str | GoogleFontSpec] | None = None,
+    config: str | dict[str, Any] | None = None,
+    background: str | None = None,
+    width: float | None = None,
+    height: float | None = None,
+) -> str:
+    """
+    Render the evaluated scenegraph as a TikZ picture without running TeX.
+
+    Parameters
+    ----------
+    text_mode : {"plain", "raw"}, default "plain"
+        Escape TeX special characters, or preserve trusted labels as raw TeX.
+        Raw mode supports math and macros; Vega still measures the source label.
+    Other options
+        Follow the corresponding SVG conversion function, except for ``bundle``.
+
+    Returns
+    -------
+    str
+        A picture for inclusion with LaTeX's ``\\input`` command. Load ``tikz``
+        in the document preamble. Text inherits the document font family and
+        retains Vega's size, weight and style. Font changes do not rerun layout.
+    """
+    ...
+
 def vega_to_url(vg_spec: VlSpec, *, fullscreen: bool | None = None) -> str:
     """
     Convert a Vega spec to a URL that opens the chart in the Vega editor.
@@ -1168,6 +1203,42 @@ def vegalite_to_svg(
     """
     ...
 
+def vegalite_to_tikz(
+    vl_spec: VlSpec,
+    *,
+    vl_version: str | None = None,
+    config: dict[str, Any] | None = None,
+    theme: VegaThemes | None = None,
+    show_warnings: bool | None = None,
+    format_locale: FormatLocale | None = None,
+    time_format_locale: TimeFormatLocale | None = None,
+    vega_plugin: str | None = None,
+    text_mode: Literal["plain", "raw"] = "plain",
+    google_fonts: list[str | GoogleFontSpec] | None = None,
+    background: str | None = None,
+    width: float | None = None,
+    height: float | None = None,
+) -> str:
+    """
+    Render the evaluated scenegraph as a TikZ picture without running TeX.
+
+    Parameters
+    ----------
+    text_mode : {"plain", "raw"}, default "plain"
+        Escape TeX special characters, or preserve trusted labels as raw TeX.
+        Raw mode supports math and macros; Vega still measures the source label.
+    Other options
+        Follow the corresponding SVG conversion function, except for ``bundle``.
+
+    Returns
+    -------
+    str
+        A picture for inclusion with LaTeX's ``\\input`` command. Load ``tikz``
+        in the document preamble. Text inherits the document font family and
+        retains Vega's size, weight and style. Font changes do not rerun layout.
+    """
+    ...
+
 def vegalite_to_url(vl_spec: VlSpec, *, fullscreen: bool | None = None) -> str:
     """
     Convert a Vega-Lite spec to a URL that opens the chart in the Vega editor.
@@ -1431,6 +1502,22 @@ if TYPE_CHECKING:
         ) -> str:
             """Async version of ``vega_to_svg``. See sync function for full documentation."""
             ...
+        async def vega_to_tikz(
+            self,
+            vg_spec: VlSpec,
+            *,
+            format_locale: FormatLocale | None = None,
+            time_format_locale: TimeFormatLocale | None = None,
+            vega_plugin: str | None = None,
+            text_mode: Literal["plain", "raw"] = "plain",
+            google_fonts: list[str | GoogleFontSpec] | None = None,
+            config: str | dict[str, Any] | None = None,
+            background: str | None = None,
+            width: float | None = None,
+            height: float | None = None,
+        ) -> str:
+            """Async version of ``vega_to_tikz``. See sync function for full documentation."""
+            ...
         async def vega_to_url(
             self, vg_spec: VlSpec, *, fullscreen: bool | None = None
         ) -> str:
@@ -1579,6 +1666,25 @@ if TYPE_CHECKING:
             height: float | None = None,
         ) -> str:
             """Async version of ``vegalite_to_svg``. See sync function for full documentation."""
+            ...
+        async def vegalite_to_tikz(
+            self,
+            vl_spec: VlSpec,
+            *,
+            vl_version: str | None = None,
+            config: dict[str, Any] | None = None,
+            theme: VegaThemes | None = None,
+            show_warnings: bool | None = None,
+            format_locale: FormatLocale | None = None,
+            time_format_locale: TimeFormatLocale | None = None,
+            vega_plugin: str | None = None,
+            text_mode: Literal["plain", "raw"] = "plain",
+            google_fonts: list[str | GoogleFontSpec] | None = None,
+            background: str | None = None,
+            width: float | None = None,
+            height: float | None = None,
+        ) -> str:
+            """Async version of ``vegalite_to_tikz``. See sync function for full documentation."""
             ...
         async def vegalite_to_url(
             self, vl_spec: VlSpec, *, fullscreen: bool | None = None

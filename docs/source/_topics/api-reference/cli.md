@@ -35,6 +35,11 @@ Every conversion command accepts `--input -` and `--output -` for standard input
 ```{program-output} python ../tools/run_vl_convert.py vl2svg --help
 ```
 
+### `vl2tikz`
+
+```{program-output} python ../tools/run_vl_convert.py vl2tikz --help
+```
+
 ### `vl2png`
 
 ```{program-output} python ../tools/run_vl_convert.py vl2png --help
@@ -75,6 +80,11 @@ Every conversion command accepts `--input -` and `--output -` for standard input
 ### `vg2svg`
 
 ```{program-output} python ../tools/run_vl_convert.py vg2svg --help
+```
+
+### `vg2tikz`
+
+```{program-output} python ../tools/run_vl_convert.py vg2tikz --help
 ```
 
 ### `vg2png`

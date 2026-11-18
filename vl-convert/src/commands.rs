@@ -106,6 +106,44 @@ pub(crate) enum Commands {
         render: RenderOverrides,
     },
 
+    /// Render a Vega-Lite scenegraph as a TikZ picture (.tex)
+    Vl2tikz {
+        /// Path to input Vega-Lite file. Reads from stdin if omitted or set to "-"
+        #[arg(short, long)]
+        input: Option<String>,
+
+        /// Path to output TeX file to be created. Writes to stdout if omitted or set to "-"
+        #[arg(short, long)]
+        output: Option<String>,
+
+        /// Vega-Lite version. One of 5.8, 5.14, 5.15, 5.16, 5.17, 5.20, 5.21, 6.1, 6.4
+        #[arg(short, long, default_value = DEFAULT_VL_VERSION)]
+        vl_version: String,
+
+        /// Named theme provided by the vega-themes package (e.g. "dark")
+        #[arg(long)]
+        theme: Option<String>,
+
+        /// Path to Vega-Lite config file
+        #[arg(short, long)]
+        config: Option<String>,
+
+        /// d3-format locale name, inline JSON, or .json/.jsonc file
+        #[arg(long)]
+        format_locale: Option<String>,
+
+        /// d3-time-format locale name, inline JSON, or .json/.jsonc file
+        #[arg(long)]
+        time_format_locale: Option<String>,
+
+        /// Escape plain labels, or preserve trusted raw TeX (math and macros)
+        #[arg(long, default_value = "plain", value_parser = ["plain", "raw"])]
+        text_mode: String,
+
+        #[command(flatten)]
+        render: RenderOverrides,
+    },
+
     /// Convert a Vega-Lite specification to a PNG image
     Vl2png {
         /// Path to input Vega-Lite file. Reads from stdin if omitted or set to "-"
@@ -391,6 +429,36 @@ pub(crate) enum Commands {
         /// Bundle fonts and images into a self-contained SVG
         #[arg(long)]
         bundle: bool,
+
+        #[command(flatten)]
+        render: RenderOverrides,
+    },
+
+    /// Render a Vega scenegraph as a TikZ picture (.tex)
+    Vg2tikz {
+        /// Path to input Vega file. Reads from stdin if omitted or set to "-"
+        #[arg(short, long)]
+        input: Option<String>,
+
+        /// Path to output TeX file to be created. Writes to stdout if omitted or set to "-"
+        #[arg(short, long)]
+        output: Option<String>,
+
+        /// Path to Vega config file
+        #[arg(short, long)]
+        config: Option<String>,
+
+        /// d3-format locale name, inline JSON, or .json/.jsonc file
+        #[arg(long)]
+        format_locale: Option<String>,
+
+        /// d3-time-format locale name, inline JSON, or .json/.jsonc file
+        #[arg(long)]
+        time_format_locale: Option<String>,
+
+        /// Escape plain labels, or preserve trusted raw TeX (math and macros)
+        #[arg(long, default_value = "plain", value_parser = ["plain", "raw"])]
+        text_mode: String,
 
         #[command(flatten)]
         render: RenderOverrides,

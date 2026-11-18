@@ -1,0 +1,33 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "width": 280,
+  "height": 155,
+  "padding": 12,
+  "autosize": "none",
+  "background": "white",
+  "marks": [
+    {"type": "text", "encode": {"enter": {
+      "x": {"value": 5}, "y": {"value": 20}, "align": {"value": "left"},
+      "text": {"value": "cost_50% & tax #1"}, "fontSize": {"value": 14},
+      "fill": {"value": "#333333"}
+    }}},
+    {"type": "text", "encode": {"enter": {
+      "x": {"value": 5}, "y": {"value": 55}, "align": {"value": "left"},
+      "text": {"value": ["First line", "Second line"]},
+      "fontSize": {"value": 12}, "lineHeight": {"value": 17},
+      "fontWeight": {"value": "bold"}, "fill": {"value": "#4c78a8"}
+    }}},
+    {"type": "text", "encode": {"enter": {
+      "x": {"value": 190}, "y": {"value": 100}, "angle": {"value": -35},
+      "align": {"value": "center"}, "text": {"value": "Rotated label"},
+      "fontSize": {"value": 14}, "fontStyle": {"value": "italic"},
+      "fill": {"value": "#b24b46"}
+    }}},
+    {"type": "text", "encode": {"enter": {
+      "x": {"value": 5}, "y": {"value": 115}, "align": {"value": "left"},
+      "text": {"value": "A very long truncated label"}, "limit": {"value": 110},
+      "ellipsis": {"value": "..."}, "fontSize": {"value": 12},
+      "fill": {"value": "#333333"}
+    }}}
+  ]
+}

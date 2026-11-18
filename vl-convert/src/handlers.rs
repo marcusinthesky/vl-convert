@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use vl_convert_rs::converter::{
-    JpegOpts, PdfOpts, PngOpts, SvgOpts, VgOpts, VlConverter, VlOpts, VlcConfig,
+    JpegOpts, PdfOpts, PngOpts, SvgOpts, TikzOpts, VgOpts, VlConverter, VlOpts, VlcConfig,
 };
 use vl_convert_rs::{anyhow, anyhow::bail};
 
@@ -107,6 +107,46 @@ pub(crate) async fn vg_2_svg(
     };
 
     write_output_string(output, &svg_output.svg)?;
+
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) async fn vg_2_tikz(
+    input: Option<&str>,
+    output: Option<&str>,
+    config: Option<String>,
+    format_locale: Option<String>,
+    time_format_locale: Option<String>,
+    tikz_opts: TikzOpts,
+    render: RenderOverrides,
+    converter_config: VlcConfig,
+) -> Result<(), anyhow::Error> {
+    let vega_str = read_input_string(input)?;
+    let vg_spec = parse_as_json(&vega_str)?;
+    let config = read_config_json(config)?;
+
+    let format_locale = parse_format_locale_option(format_locale.as_deref())?;
+    let time_format_locale = parse_time_format_locale_option(time_format_locale.as_deref())?;
+
+    let converter = VlConverter::with_config(converter_config)?;
+
+    let mut vg_opts = VgOpts {
+        config,
+        format_locale,
+        time_format_locale,
+        ..Default::default()
+    };
+    apply_vg_render_overrides(&mut vg_opts, render);
+
+    let tikz_output = match converter.vega_to_tikz(vg_spec, vg_opts, tikz_opts).await {
+        Ok(output) => output,
+        Err(err) => {
+            bail!("Vega to TikZ conversion failed: {}", err);
+        }
+    };
+
+    write_output_string(output, &tikz_output.tikz)?;
 
     Ok(())
 }
@@ -296,6 +336,54 @@ pub(crate) async fn vl_2_svg(
     };
 
     write_output_string(output, &svg_output.svg)?;
+
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) async fn vl_2_tikz(
+    input: Option<&str>,
+    output: Option<&str>,
+    vl_version: &str,
+    theme: Option<String>,
+    config: Option<String>,
+    format_locale: Option<String>,
+    time_format_locale: Option<String>,
+    tikz_opts: TikzOpts,
+    render: RenderOverrides,
+    converter_config: VlcConfig,
+) -> Result<(), anyhow::Error> {
+    let vl_version = parse_vl_version(vl_version)?;
+    let vegalite_str = read_input_string(input)?;
+    let vl_spec = parse_as_json(&vegalite_str)?;
+    let config = read_config_json(config)?;
+
+    let format_locale = parse_format_locale_option(format_locale.as_deref())?;
+    let time_format_locale = parse_time_format_locale_option(time_format_locale.as_deref())?;
+
+    let converter = VlConverter::with_config(converter_config)?;
+
+    let mut vl_opts = VlOpts {
+        vl_version,
+        config,
+        theme,
+        format_locale,
+        time_format_locale,
+        ..Default::default()
+    };
+    apply_vl_render_overrides(&mut vl_opts, render);
+
+    let tikz_output = match converter
+        .vegalite_to_tikz(vl_spec, vl_opts, tikz_opts)
+        .await
+    {
+        Ok(output) => output,
+        Err(err) => {
+            bail!("Vega-Lite to TikZ conversion failed: {}", err);
+        }
+    };
+
+    write_output_string(output, &tikz_output.tikz)?;
 
     Ok(())
 }

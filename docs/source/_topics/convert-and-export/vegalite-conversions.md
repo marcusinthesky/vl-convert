@@ -12,7 +12,7 @@ interfaces: [python, cli, rust, server]
 
 Use the Vega-Lite functions for charts authored in Vega-Lite. VlConvert compiles the specification to Vega with the bundled Vega-Lite library, then returns or renders the result.
 
-Available outputs: compiled Vega JSON, SVG, PNG, JPEG, PDF, HTML, a Vega Editor URL, an evaluated scenegraph. SVG, HTML, and URL outputs are text. PNG, JPEG, and PDF outputs are bytes.
+Available outputs: compiled Vega JSON, SVG, PNG, JPEG, PDF, experimental TikZ, HTML, a Vega Editor URL, an evaluated scenegraph. SVG, TikZ, HTML, and URL outputs are text. PNG, JPEG, and PDF outputs are bytes.
 
 VlConvert bundles several Vega-Lite versions and uses the newest by default. See [Supported Vega-Lite Versions](#supported-vega-lite-versions) to select another compiler. The setting does not change the input's `$schema` field.
 
@@ -85,6 +85,7 @@ Send a request body to the endpoint for the output you need:
 | PNG | `POST /vegalite/png` |
 | JPEG | `POST /vegalite/jpeg` |
 | PDF | `POST /vegalite/pdf` |
+| TikZ (experimental) | `POST /vegalite/tikz` |
 | HTML | `POST /vegalite/html` |
 | Vega Editor URL | `POST /vegalite/url` |
 | Scenegraph | `POST /vegalite/scenegraph` |
@@ -136,3 +137,5 @@ Set `"vl_version": "6.4"` in the request body. `GET /info` returns the server's 
 ::::
 
 Related guides: {doc}`data-loading` for specifications that load data from URLs or files, {doc}`image-quality` for size and resolution options, {doc}`themes` and {doc}`locales` for appearance and formatting, {doc}`html-output` for interactive pages, and {doc}`../advanced/scenegraph` and {doc}`../advanced/font-introspection` for the intermediate outputs.
+
+For TeX picture fragments with document-font labels and optional mathematical notation, see {doc}`tikz-output`.

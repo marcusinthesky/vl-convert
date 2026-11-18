@@ -371,6 +371,56 @@ pub struct SvgOutput {
     pub google_fonts: GoogleFontUsage,
 }
 
+/// How labels are included in a TikZ export.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum TikzTextMode {
+    /// Escape TeX special characters and typeset labels literally.
+    #[default]
+    Plain,
+    /// Include labels as TeX source. Only use with trusted specifications.
+    Raw,
+}
+
+impl FromStr for TikzTextMode {
+    type Err = AnyError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value {
+            "plain" => Ok(Self::Plain),
+            "raw" => Ok(Self::Raw),
+            _ => Err(anyhow!(
+                "Unsupported TikZ text mode: {value}. Expected 'plain' or 'raw'."
+            )),
+        }
+    }
+}
+
+/// Options for the experimental scenegraph-to-TikZ renderer.
+///
+/// Export requires no TeX installation. Include the result in a document that
+/// loads the `tikz` package. Labels inherit its font family, while preserving
+/// Vega's font size, weight and style. Vega still computes layout using its own
+/// font metrics; TeX does not recompute axes, legends or chart layout.
+#[derive(Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TikzOpts {
+    /// Label escaping policy. Defaults to [`TikzTextMode::Plain`].
+    pub text_mode: TikzTextMode,
+}
+
+/// Output from an experimental TikZ conversion.
+#[derive(Debug)]
+pub struct TikzOutput {
+    /// A `tikzpicture` environment containing vector drawing commands and labels.
+    pub tikz: String,
+    /// Diagnostics captured during conversion.
+    pub logs: Vec<LogEntry>,
+    /// Google Fonts downloads and resolved variants used for Vega layout.
+    /// The TeX document's fonts are not embedded in the output.
+    pub google_fonts: GoogleFontUsage,
+}
+
 /// Output from a PNG conversion.
 #[derive(Debug)]
 pub struct PngOutput {
@@ -451,6 +501,7 @@ macro_rules! impl_with_google_fonts {
 
 impl_with_google_fonts!(
     SvgOutput,
+    TikzOutput,
     PngOutput,
     JpegOutput,
     PdfOutput,

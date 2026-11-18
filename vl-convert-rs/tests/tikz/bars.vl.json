@@ -1,0 +1,16 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "title": "Estimates & uncertainty",
+  "width": 250,
+  "height": 140,
+  "data": {"values": [
+    {"category": "Alpha", "value": 2},
+    {"category": "Beta", "value": 4},
+    {"category": "Gamma", "value": 3}
+  ]},
+  "mark": {"type": "bar", "cornerRadiusTopLeft": 4, "cornerRadiusTopRight": 4},
+  "encoding": {
+    "x": {"field": "category", "type": "nominal", "axis": {"labelAngle": 0}},
+    "y": {"field": "value", "type": "quantitative", "title": "Estimate"}
+  }
+}

@@ -1,7 +1,7 @@
 # vl-convert-server
 
 Library crate for serving Vega-Lite and Vega conversions over HTTP. It wraps
-`vl-convert-rs` with an axum-based REST API for SVG, PNG, PDF, JPEG, HTML,
+`vl-convert-rs` with an axum-based REST API for SVG, PNG, PDF, JPEG, experimental TikZ, HTML,
 scenegraph, theme, font, and JavaScript-bundling operations.
 
 This crate does not publish a `vl-convert-server` binary. The `vl-convert`
@@ -164,6 +164,17 @@ Admin auth is independent of main API auth. `ServeConfig.admin_api_key = None`
 means admin access is gated only by the listener boundary: a loopback IP-literal
 TCP bind such as `127.0.0.1` / `::1`, or UDS filesystem permissions.
 Non-loopback TCP admin listeners require a non-empty admin API key.
+
+## Experimental TikZ Output
+
+`POST /vegalite/tikz` and `POST /vega/tikz` return a `tikzpicture` fragment as
+`text/x-tex; charset=utf-8`. Requests accept the usual options for their input
+format and an optional `text_mode`: `"plain"` escapes labels (the default),
+while `"raw"` preserves trusted TeX. Exporting does not invoke TeX.
+
+See the [TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md)
+for a complete request, LaTeX inclusion, typography behavior, and unsupported
+drawing features.
 
 ## OpenAPI
 

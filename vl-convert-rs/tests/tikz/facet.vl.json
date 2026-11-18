@@ -1,0 +1,21 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "data": {"values": [
+    {"panel": "North", "group": "A", "value": 2},
+    {"panel": "North", "group": "B", "value": 5},
+    {"panel": "South", "group": "A", "value": 4},
+    {"panel": "South", "group": "B", "value": 3}
+  ]},
+  "facet": {"column": {"field": "panel", "type": "nominal", "title": null}},
+  "spec": {
+    "width": 110,
+    "height": 120,
+    "mark": "bar",
+    "encoding": {
+      "x": {"field": "group", "type": "nominal", "axis": {"labelAngle": 0}},
+      "y": {"field": "value", "type": "quantitative"},
+      "color": {"field": "group", "type": "nominal"}
+    }
+  },
+  "config": {"view": {"stroke": "#777777"}, "axis": {"labelFontSize": 11}}
+}

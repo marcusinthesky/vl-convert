@@ -4,6 +4,7 @@ pub(crate) mod inner;
 mod permissions;
 mod plugin;
 mod rendering;
+mod tikz;
 mod transfer;
 mod types;
 mod value_or_string;

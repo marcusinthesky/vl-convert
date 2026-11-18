@@ -12,7 +12,8 @@ use pyo3::types::PyBytes;
 use pythonize::pythonize;
 use std::str::FromStr;
 use vl_convert_rs::converter::{
-    HtmlOpts, JpegOpts, PdfOpts, PngOpts, Renderer, SvgOpts, UrlOpts, VgOpts, VlOpts,
+    HtmlOpts, JpegOpts, PdfOpts, PngOpts, Renderer, SvgOpts, TikzOpts, TikzTextMode, UrlOpts,
+    VgOpts, VlOpts,
 };
 use vl_convert_rs::VlVersion;
 
@@ -171,6 +172,100 @@ pub fn vega_to_svg(
         Err(err) => return Err(prefixed_py_error("Vega to SVG conversion failed", err)),
     };
     Ok(svg)
+}
+
+/// Render an evaluated Vega scenegraph as a TikZ picture.
+///
+/// The result can be included with LaTeX's ``\input`` command in a document
+/// that loads ``tikz``. Conversion does not run TeX. Text uses the surrounding
+/// document's font family with Vega's size, weight and style; changing fonts
+/// does not rerun Vega's layout.
+///
+/// Parameters
+/// ----------
+/// vg_spec : str or dict
+///     Vega JSON specification.
+/// format_locale : str or dict, optional
+///     d3-format locale name or definition.
+/// time_format_locale : str or dict, optional
+///     d3-time-format locale name or definition.
+/// vega_plugin : str, optional
+///     Per-request Vega plugin, subject to converter configuration.
+/// text_mode : {"plain", "raw"}, default "plain"
+///     Escape TeX special characters, or preserve trusted labels as raw TeX.
+///     Raw mode allows math and macros; Vega still measures the source label.
+/// google_fonts : list, optional
+///     Fonts to make available to Vega's layout; fonts are not embedded in TeX.
+/// config : str or dict, optional
+///     Vega configuration merged with the specification.
+/// background : str, optional
+///     Override the chart background.
+/// width, height : float, optional
+///     Override logical chart dimensions before layout.
+///
+/// Returns
+/// -------
+/// str
+///     A TikZ picture containing PGF drawing commands and TeX text.
+#[pyfunction]
+#[pyo3(signature = (
+    vg_spec,
+    *,
+    format_locale=None,
+    time_format_locale=None,
+    vega_plugin=None,
+    text_mode="plain",
+    google_fonts=None,
+    config=None,
+    background=None,
+    width=None,
+    height=None,
+))]
+pub fn vega_to_tikz(
+    vg_spec: Py<PyAny>,
+    format_locale: Option<Py<PyAny>>,
+    time_format_locale: Option<Py<PyAny>>,
+    vega_plugin: Option<String>,
+    text_mode: &str,
+    google_fonts: Option<Vec<Py<PyAny>>>,
+    config: Option<Py<PyAny>>,
+    background: Option<String>,
+    width: Option<f32>,
+    height: Option<f32>,
+) -> PyResult<String> {
+    let vg_spec = parse_json_spec(vg_spec)?;
+    let format_locale = parse_option_format_locale(format_locale)?;
+    let time_format_locale = parse_option_time_format_locale(time_format_locale)?;
+    let config = parse_optional_config(config)?;
+    let google_fonts = parse_google_fonts_arg(google_fonts)
+        .map_err(|err| prefixed_py_error("Invalid google_fonts", err))?;
+
+    let vg_opts = VgOpts {
+        format_locale,
+        time_format_locale,
+        google_fonts,
+        vega_plugin,
+        config,
+        background,
+        width,
+        height,
+    };
+
+    let tikz_opts = TikzOpts {
+        text_mode: TikzTextMode::from_str(text_mode)
+            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
+    };
+
+    let tikz = match run_converter_future(move |converter| async move {
+        converter
+            .vega_to_tikz(vg_spec, vg_opts, tikz_opts)
+            .await
+            .map(|o| o.tikz)
+    }) {
+        Ok(vega_spec) => vega_spec,
+        Err(err) => return Err(prefixed_py_error("Vega to TikZ conversion failed", err)),
+    };
+    Ok(tikz)
 }
 
 /// Convert a Vega spec to a Vega Scenegraph
@@ -361,6 +456,126 @@ pub fn vegalite_to_svg(
         Err(err) => return Err(prefixed_py_error("Vega-Lite to SVG conversion failed", err)),
     };
     Ok(svg)
+}
+
+/// Render an evaluated Vega-Lite scenegraph as a TikZ picture.
+///
+/// The result can be included with LaTeX's ``\input`` command in a document
+/// that loads ``tikz``. Conversion does not run TeX. Text uses the surrounding
+/// document's font family with Vega's size, weight and style; changing fonts
+/// does not rerun Vega's layout.
+///
+/// Parameters
+/// ----------
+/// vl_spec : str or dict
+///     Vega-Lite JSON specification.
+/// vl_version : str, optional
+///     Bundled Vega-Lite compiler version; defaults to the newest bundled version.
+/// config : dict, optional
+///     Chart configuration applied during compilation.
+/// theme : str, optional
+///     Named Vega theme.
+/// show_warnings : bool, optional
+///     Deprecated; use Python's ``vl_convert`` logger instead.
+/// format_locale : str or dict, optional
+///     d3-format locale name or definition.
+/// time_format_locale : str or dict, optional
+///     d3-time-format locale name or definition.
+/// vega_plugin : str, optional
+///     Per-request Vega plugin, subject to converter configuration.
+/// text_mode : {"plain", "raw"}, default "plain"
+///     Escape TeX special characters, or preserve trusted labels as raw TeX.
+///     Raw mode allows math and macros; Vega still measures the source label.
+/// google_fonts : list, optional
+///     Fonts to make available to Vega's layout; fonts are not embedded in TeX.
+/// background : str, optional
+///     Override the chart background.
+/// width, height : float, optional
+///     Override logical chart dimensions before layout.
+///
+/// Returns
+/// -------
+/// str
+///     A TikZ picture containing PGF drawing commands and TeX text.
+#[pyfunction]
+#[pyo3(signature = (
+    vl_spec,
+    *,
+    vl_version=None,
+    config=None,
+    theme=None,
+    show_warnings=None,
+    format_locale=None,
+    time_format_locale=None,
+    vega_plugin=None,
+    text_mode="plain",
+    google_fonts=None,
+    background=None,
+    width=None,
+    height=None,
+))]
+pub fn vegalite_to_tikz(
+    vl_spec: Py<PyAny>,
+    vl_version: Option<&str>,
+    config: Option<Py<PyAny>>,
+    theme: Option<String>,
+    show_warnings: Option<bool>,
+    format_locale: Option<Py<PyAny>>,
+    time_format_locale: Option<Py<PyAny>>,
+    vega_plugin: Option<String>,
+    text_mode: &str,
+    google_fonts: Option<Vec<Py<PyAny>>>,
+    background: Option<String>,
+    width: Option<f32>,
+    height: Option<f32>,
+) -> PyResult<String> {
+    handle_show_warnings(show_warnings);
+    let vl_spec = parse_json_spec(vl_spec)?;
+    let config = parse_optional_config(config)?;
+    let format_locale = parse_option_format_locale(format_locale)?;
+    let time_format_locale = parse_option_time_format_locale(time_format_locale)?;
+    let google_fonts = parse_google_fonts_arg(google_fonts)
+        .map_err(|err| prefixed_py_error("Invalid google_fonts", err))?;
+
+    let vl_version = if let Some(vl_version) = vl_version {
+        VlVersion::from_str(vl_version)?
+    } else {
+        Default::default()
+    };
+
+    let vl_opts = VlOpts {
+        vl_version,
+        config,
+        theme,
+        format_locale,
+        time_format_locale,
+        google_fonts,
+        vega_plugin,
+        background,
+        width,
+        height,
+    };
+
+    let tikz_opts = TikzOpts {
+        text_mode: TikzTextMode::from_str(text_mode)
+            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
+    };
+
+    let tikz = match run_converter_future(move |converter| async move {
+        converter
+            .vegalite_to_tikz(vl_spec, vl_opts, tikz_opts)
+            .await
+            .map(|o| o.tikz)
+    }) {
+        Ok(vega_spec) => vega_spec,
+        Err(err) => {
+            return Err(prefixed_py_error(
+                "Vega-Lite to TikZ conversion failed",
+                err,
+            ))
+        }
+    };
+    Ok(tikz)
 }
 
 /// Convert a Vega-Lite spec to a Vega Scenegraph using a
@@ -1408,6 +1623,73 @@ pub fn vega_to_svg_asyncio<'py>(
     })
 }
 
+#[doc = async_variant_doc!("vega_to_tikz")]
+#[pyfunction(name = "vega_to_tikz")]
+#[pyo3(signature = (
+    vg_spec,
+    *,
+    format_locale=None,
+    time_format_locale=None,
+    vega_plugin=None,
+    text_mode="plain",
+    google_fonts=None,
+    config=None,
+    background=None,
+    width=None,
+    height=None,
+))]
+pub fn vega_to_tikz_asyncio<'py>(
+    py: Python<'py>,
+    vg_spec: Py<PyAny>,
+    format_locale: Option<Py<PyAny>>,
+    time_format_locale: Option<Py<PyAny>>,
+    vega_plugin: Option<String>,
+    text_mode: &str,
+    google_fonts: Option<Vec<Py<PyAny>>>,
+    config: Option<Py<PyAny>>,
+    background: Option<String>,
+    width: Option<f32>,
+    height: Option<f32>,
+) -> PyResult<Bound<'py, PyAny>> {
+    let vg_spec = parse_json_spec(vg_spec)?;
+    let format_locale = parse_option_format_locale(format_locale)?;
+    let time_format_locale = parse_option_time_format_locale(time_format_locale)?;
+    let config = parse_optional_config(config)?;
+    let google_fonts = parse_google_fonts_arg(google_fonts)
+        .map_err(|err| prefixed_py_error("Invalid google_fonts", err))?;
+    let vg_opts = VgOpts {
+        format_locale,
+        time_format_locale,
+        google_fonts,
+        vega_plugin,
+        config,
+        background,
+        width,
+        height,
+    };
+    let tikz_opts = TikzOpts {
+        text_mode: TikzTextMode::from_str(text_mode)
+            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
+    };
+
+    let converter = converter_read_handle()
+        .map_err(|err| prefixed_py_error("Vega to TikZ conversion failed", err))?;
+
+    let error_prefix = "Vega to TikZ conversion failed";
+    future_into_py_object(py, async move {
+        let value = converter
+            .vega_to_tikz(vg_spec, vg_opts, tikz_opts)
+            .await
+            .map(|o| o.tikz)
+            .map_err(|err| prefixed_py_error(error_prefix, err))?;
+        Python::attach(|py| {
+            pythonize(py, &value)
+                .map_err(|err| PyValueError::new_err(err.to_string()))
+                .map(|obj| obj.into())
+        })
+    })
+}
+
 #[doc = async_variant_doc!("vega_to_scenegraph")]
 #[pyfunction(name = "vega_to_scenegraph")]
 #[pyo3(signature = (
@@ -1562,6 +1844,87 @@ pub fn vegalite_to_svg_asyncio<'py>(
             .vegalite_to_svg(vl_spec, vl_opts, svg_opts)
             .await
             .map(|o| o.svg)
+            .map_err(|err| prefixed_py_error(error_prefix, err))?;
+        Python::attach(|py| {
+            pythonize(py, &value)
+                .map_err(|err| PyValueError::new_err(err.to_string()))
+                .map(|obj| obj.into())
+        })
+    })
+}
+
+#[doc = async_variant_doc!("vegalite_to_tikz")]
+#[pyfunction(name = "vegalite_to_tikz")]
+#[pyo3(signature = (
+    vl_spec,
+    *,
+    vl_version=None,
+    config=None,
+    theme=None,
+    show_warnings=None,
+    format_locale=None,
+    time_format_locale=None,
+    vega_plugin=None,
+    text_mode="plain",
+    google_fonts=None,
+    background=None,
+    width=None,
+    height=None,
+))]
+pub fn vegalite_to_tikz_asyncio<'py>(
+    py: Python<'py>,
+    vl_spec: Py<PyAny>,
+    vl_version: Option<&str>,
+    config: Option<Py<PyAny>>,
+    theme: Option<String>,
+    show_warnings: Option<bool>,
+    format_locale: Option<Py<PyAny>>,
+    time_format_locale: Option<Py<PyAny>>,
+    vega_plugin: Option<String>,
+    text_mode: &str,
+    google_fonts: Option<Vec<Py<PyAny>>>,
+    background: Option<String>,
+    width: Option<f32>,
+    height: Option<f32>,
+) -> PyResult<Bound<'py, PyAny>> {
+    handle_show_warnings(show_warnings);
+    let vl_spec = parse_json_spec(vl_spec)?;
+    let config = parse_optional_config(config)?;
+    let format_locale = parse_option_format_locale(format_locale)?;
+    let time_format_locale = parse_option_time_format_locale(time_format_locale)?;
+    let google_fonts = parse_google_fonts_arg(google_fonts)
+        .map_err(|err| prefixed_py_error("Invalid google_fonts", err))?;
+    let vl_version = if let Some(vl_version) = vl_version {
+        VlVersion::from_str(vl_version)?
+    } else {
+        Default::default()
+    };
+    let vl_opts = VlOpts {
+        vl_version,
+        config,
+        theme,
+        format_locale,
+        time_format_locale,
+        google_fonts,
+        vega_plugin,
+        background,
+        width,
+        height,
+    };
+    let tikz_opts = TikzOpts {
+        text_mode: TikzTextMode::from_str(text_mode)
+            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
+    };
+
+    let converter = converter_read_handle()
+        .map_err(|err| prefixed_py_error("Vega-Lite to TikZ conversion failed", err))?;
+
+    let error_prefix = "Vega-Lite to TikZ conversion failed";
+    future_into_py_object(py, async move {
+        let value = converter
+            .vegalite_to_tikz(vl_spec, vl_opts, tikz_opts)
+            .await
+            .map(|o| o.tikz)
             .map_err(|err| prefixed_py_error(error_prefix, err))?;
         Python::attach(|py| {
             pythonize(py, &value)

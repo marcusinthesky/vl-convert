@@ -12,7 +12,7 @@ interfaces: [python, cli, rust, server]
 
 Use the Vega functions for charts authored in Vega or already compiled to Vega from Vega-Lite. VlConvert parses and evaluates the specification directly, so the Vega-Lite `theme` and `vl_version` options do not apply.
 
-Available outputs: SVG, PNG, JPEG, PDF, HTML, a Vega Editor URL, and an evaluated scenegraph.
+Available outputs: SVG, PNG, JPEG, PDF, experimental TikZ, HTML, a Vega Editor URL, and an evaluated scenegraph.
 
 Save this Vega specification:
 
@@ -93,3 +93,5 @@ The SVG conversion renders this chart:
 ```
 
 Size, locale, and other per-conversion options work the same way as for Vega-Lite. See {doc}`image-quality`, {doc}`locales`, and {doc}`../advanced/conversion-overrides`.
+
+For TeX picture fragments with document-font labels and optional mathematical notation, see {doc}`tikz-output`.

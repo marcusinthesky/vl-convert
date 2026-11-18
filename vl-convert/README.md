@@ -1,12 +1,22 @@
 # vl-convert
 
 `vl-convert` is the command-line interface and HTTP server for VlConvert. For
-Vega and Vega-Lite charts, it produces SVG, PNG, JPEG, PDF, HTML, scenegraphs,
+Vega and Vega-Lite charts, it produces SVG, PNG, JPEG, PDF, experimental TikZ, HTML, scenegraphs,
 font metadata, and Vega Editor URLs. It also compiles Vega-Lite to Vega and
 converts existing SVG to PNG, JPEG, or PDF.
 
 The executable embeds the official Vega and Vega-Lite JavaScript libraries. It
 does not require a browser or Node.js.
+
+## Experimental TikZ Output
+
+`vg2tikz` and `vl2tikz` export Vega and Vega-Lite inputs as a `tikzpicture` fragment.
+This uses Vega's evaluated scenegraph and Canvas drawing logic, with PGF/TikZ
+commands as the output. TeX is not required during export. Labels inherit the
+containing document's font family, and plain-text escaping is the default.
+See the [TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md)
+for this interface's API, raw mathematical labels, typography limits, and
+unsupported drawing features.
 
 ## Installation
 

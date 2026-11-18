@@ -1,0 +1,78 @@
+name: TikZ
+
+on:
+  push:
+    branches: [main, explore/scenegraph-tikz]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikz-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  renderer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Test the adapter and real Vega scenegraphs offline
+        working-directory: vl-convert-rs
+        run: node --loader ./tests/vendor-loader.mjs --test tests/tikz_context.test.mjs tests/tikz_render.test.mjs
+      - name: Install TeX for output verification
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-extra texlive-pictures lmodern poppler-utils
+      - name: Compile representative figures
+        working-directory: vl-convert-rs
+        run: node --loader ./tests/vendor-loader.mjs tests/tikz/generate.mjs "$RUNNER_TEMP/tikz-evidence" --compile
+      - name: Upload SVG and compiled TeX evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: tikz-rendering-evidence
+          path: ${{ runner.temp }}/tikz-evidence
+          if-no-files-found: ignore
+
+  api:
+    runs-on: ubuntu-latest
+    env:
+      RUST_MIN_STACK: 8388608
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+          components: rustfmt, clippy
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - uses: Swatinem/rust-cache@v2.9.2
+        with:
+          prefix-key: v2-rust
+          shared-key: native-${{ runner.os }}-${{ runner.arch }}
+          cache-on-failure: true
+      - uses: arduino/setup-protoc@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+      - name: Test Rust, CLI and HTTP contracts
+        run: cargo test -p vl-convert-rs -p vl-convert -p vl-convert-server --test test_tikz -- --test-threads=1
+      - name: Build the Python bindings and test sync and async APIs
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install maturin pytest ruff
+          maturin develop -m vl-convert-python/Cargo.toml
+          ruff format --check vl-convert-python
+          pytest vl-convert-python/tests/test_tikz.py -v
+      - name: Check native warnings
+        run: cargo clippy -p vl-convert-rs -p vl-convert -p vl-convert-server -p vl-convert-python -- -D warnings

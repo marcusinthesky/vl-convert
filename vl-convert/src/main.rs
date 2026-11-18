@@ -12,7 +12,7 @@ use std::num::NonZeroU64;
 use std::str::FromStr;
 use vl_convert_rs::converter::{
     vega_to_url, vegalite_to_url, FontOpts, HtmlOpts, JpegOpts, PdfOpts, PngOpts, Renderer,
-    SvgOpts, UrlOpts, VgOpts, VlConverter, VlOpts, VlcConfig,
+    SvgOpts, TikzOpts, TikzTextMode, UrlOpts, VgOpts, VlConverter, VlOpts, VlcConfig,
 };
 use vl_convert_rs::{anyhow, anyhow::bail};
 
@@ -20,7 +20,8 @@ use cli_types::Cli;
 use commands::Commands;
 use handlers::{
     cat_theme, javascript_bundle, list_themes, vg_2_jpeg, vg_2_pdf, vg_2_png, vg_2_scenegraph,
-    vg_2_svg, vl_2_jpeg, vl_2_pdf, vl_2_png, vl_2_scenegraph, vl_2_svg, vl_2_vg,
+    vg_2_svg, vg_2_tikz, vl_2_jpeg, vl_2_pdf, vl_2_png, vl_2_scenegraph, vl_2_svg, vl_2_tikz,
+    vl_2_vg,
 };
 use io_utils::{
     apply_global_font_dirs, apply_global_google_fonts_cache, expand_allowed_base_urls,
@@ -200,6 +201,34 @@ async fn run_command(
                 format_locale,
                 time_format_locale,
                 svg_opts,
+                render,
+                base_config,
+            )
+            .await?
+        }
+        Vl2tikz {
+            input,
+            output,
+            vl_version,
+            theme,
+            config,
+            format_locale,
+            time_format_locale,
+            text_mode,
+            render,
+        } => {
+            let tikz_opts = TikzOpts {
+                text_mode: TikzTextMode::from_str(&text_mode)?,
+            };
+            vl_2_tikz(
+                input.as_deref(),
+                output.as_deref(),
+                &vl_version,
+                theme,
+                config,
+                format_locale,
+                time_format_locale,
+                tikz_opts,
                 render,
                 base_config,
             )
@@ -435,6 +464,30 @@ async fn run_command(
                 format_locale,
                 time_format_locale,
                 svg_opts,
+                render,
+                base_config,
+            )
+            .await?
+        }
+        Vg2tikz {
+            input,
+            output,
+            config,
+            format_locale,
+            text_mode,
+            time_format_locale,
+            render,
+        } => {
+            let tikz_opts = TikzOpts {
+                text_mode: TikzTextMode::from_str(&text_mode)?,
+            };
+            vg_2_tikz(
+                input.as_deref(),
+                output.as_deref(),
+                config,
+                format_locale,
+                time_format_locale,
+                tikz_opts,
                 render,
                 base_config,
             )
