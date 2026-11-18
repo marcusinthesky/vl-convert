@@ -29,10 +29,6 @@ import('{msgpack_url}').then((imported) => {{
     msgpack = imported;
 }})
 
-var tikzRenderer;
-import('https://cdn.jsdelivr.net/vl-convert-tikz.js').then((imported) => {{
-    tikzRenderer = imported;
-}})
 "#,
                 vega_url = vega_url(),
                 vega_themes_url = vega_themes_url(),
@@ -330,6 +326,8 @@ function vegaToScenegraph(vgSpec, formatLocale, timeFormatLocale, config, errors
 }
 
 async function vegaToTikz(vgSpec, formatLocale, timeFormatLocale, config, options, errors) {
+    // Load only for TikZ requests; the runtime caches this vendored module.
+    const tikzRenderer = await import('https://cdn.jsdelivr.net/vl-convert-tikz.js');
     let view;
     try {
         if (formatLocale != null) vega.formatLocale(formatLocale);

@@ -17,6 +17,13 @@ use vl_convert_rs::converter::{
 };
 use vl_convert_rs::VlVersion;
 
+fn parse_tikz_opts(text_mode: &str) -> PyResult<TikzOpts> {
+    Ok(TikzOpts {
+        text_mode: TikzTextMode::from_str(text_mode)
+            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
+    })
+}
+
 fn validate_pdf_scale(scale: Option<f64>) -> PyResult<()> {
     if let Some(scale) = scale {
         if scale != 1.0 {
@@ -251,21 +258,15 @@ pub fn vega_to_tikz(
         height,
     };
 
-    let tikz_opts = TikzOpts {
-        text_mode: TikzTextMode::from_str(text_mode)
-            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
-    };
+    let tikz_opts = parse_tikz_opts(text_mode)?;
 
-    let tikz = match run_converter_future(move |converter| async move {
+    run_converter_future(move |converter| async move {
         converter
             .vega_to_tikz(vg_spec, vg_opts, tikz_opts)
             .await
-            .map(|o| o.tikz)
-    }) {
-        Ok(vega_spec) => vega_spec,
-        Err(err) => return Err(prefixed_py_error("Vega to TikZ conversion failed", err)),
-    };
-    Ok(tikz)
+            .map(|output| output.tikz)
+    })
+    .map_err(|err| prefixed_py_error("Vega to TikZ conversion failed", err))
 }
 
 /// Convert a Vega spec to a Vega Scenegraph
@@ -556,26 +557,15 @@ pub fn vegalite_to_tikz(
         height,
     };
 
-    let tikz_opts = TikzOpts {
-        text_mode: TikzTextMode::from_str(text_mode)
-            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
-    };
+    let tikz_opts = parse_tikz_opts(text_mode)?;
 
-    let tikz = match run_converter_future(move |converter| async move {
+    run_converter_future(move |converter| async move {
         converter
             .vegalite_to_tikz(vl_spec, vl_opts, tikz_opts)
             .await
-            .map(|o| o.tikz)
-    }) {
-        Ok(vega_spec) => vega_spec,
-        Err(err) => {
-            return Err(prefixed_py_error(
-                "Vega-Lite to TikZ conversion failed",
-                err,
-            ))
-        }
-    };
-    Ok(tikz)
+            .map(|output| output.tikz)
+    })
+    .map_err(|err| prefixed_py_error("Vega-Lite to TikZ conversion failed", err))
 }
 
 /// Convert a Vega-Lite spec to a Vega Scenegraph using a
@@ -1667,10 +1657,7 @@ pub fn vega_to_tikz_asyncio<'py>(
         width,
         height,
     };
-    let tikz_opts = TikzOpts {
-        text_mode: TikzTextMode::from_str(text_mode)
-            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
-    };
+    let tikz_opts = parse_tikz_opts(text_mode)?;
 
     let converter = converter_read_handle()
         .map_err(|err| prefixed_py_error("Vega to TikZ conversion failed", err))?;
@@ -1911,10 +1898,7 @@ pub fn vegalite_to_tikz_asyncio<'py>(
         width,
         height,
     };
-    let tikz_opts = TikzOpts {
-        text_mode: TikzTextMode::from_str(text_mode)
-            .map_err(|err| prefixed_py_error("Invalid text_mode", err))?,
-    };
+    let tikz_opts = parse_tikz_opts(text_mode)?;
 
     let converter = converter_read_handle()
         .map_err(|err| prefixed_py_error("Vega-Lite to TikZ conversion failed", err))?;

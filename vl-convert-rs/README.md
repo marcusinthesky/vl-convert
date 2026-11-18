@@ -1,13 +1,3 @@
-## Experimental TikZ Output
-
-`vega_to_tikz` and `vegalite_to_tikz` export a `tikzpicture` fragment.
-This uses Vega's evaluated scenegraph and Canvas drawing logic, with PGF/TikZ
-commands as the output. TeX is not required during export. Labels inherit the
-containing document's font family, and plain-text escaping is the default.
-See the [TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md)
-for this interface's API, raw mathematical labels, typography limits, and
-unsupported drawing features.
-
 ## Overview
 
 This crate provides a self-contained Rust library for converting
@@ -17,6 +7,9 @@ charts, it produces SVG, PNG, JPEG, PDF, experimental TikZ, HTML, scenegraphs, f
 Vega Editor URLs. It also compiles Vega-Lite to Vega and converts existing SVG
 to PNG, JPEG, or PDF. The conversions run the official Vega and Vega-Lite
 JavaScript libraries in an embedded V8 runtime.
+
+For experimental LaTeX picture export, see the
+[TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md).
 
 This crate is the conversion engine for the
 [`vl-convert`](https://crates.io/crates/vl-convert) CLI and server and the

@@ -74,5 +74,11 @@ jobs:
           maturin develop -m vl-convert-python/Cargo.toml
           ruff format --check vl-convert-python
           pytest vl-convert-python/tests/test_tikz.py -v
+      - name: Upload the native build for optional gallery review
+        uses: actions/upload-artifact@v7
+        with:
+          name: tikz-python-test-build
+          path: .venv/lib/python3.11/site-packages/vl_convert
+          retention-days: 7
       - name: Check native warnings
         run: cargo clippy -p vl-convert-rs -p vl-convert -p vl-convert-server -p vl-convert-python -- -D warnings

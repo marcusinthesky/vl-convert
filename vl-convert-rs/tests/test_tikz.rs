@@ -1,6 +1,8 @@
 use serde_json::json;
 use std::str::FromStr;
-use vl_convert_rs::{FormatLocale, TikzOpts, TikzTextMode, VgOpts, VlConverter, VlOpts, VlcConfig};
+use vl_convert_rs::{
+    FormatLocale, SvgOpts, TikzOpts, TikzTextMode, VgOpts, VlConverter, VlOpts, VlcConfig,
+};
 
 fn converter() -> VlConverter {
     VlConverter::with_config(VlcConfig::default()).unwrap()
@@ -23,12 +25,20 @@ async fn tikz_uses_the_same_compiled_vega_for_both_inputs() {
         .vegalite_to_vega(spec.clone(), VlOpts::default())
         .await
         .unwrap();
+    let svg_before = converter
+        .vega_to_svg(compiled.spec.clone(), VgOpts::default(), SvgOpts::default())
+        .await
+        .unwrap();
     let vl = converter
         .vegalite_to_tikz(spec, VlOpts::default(), TikzOpts::default())
         .await
         .unwrap();
     let vg = converter
-        .vega_to_tikz(compiled.spec, VgOpts::default(), TikzOpts::default())
+        .vega_to_tikz(
+            compiled.spec.clone(),
+            VgOpts::default(),
+            TikzOpts::default(),
+        )
         .await
         .unwrap();
     assert_eq!(vl.tikz, vg.tikz);
@@ -36,6 +46,59 @@ async fn tikz_uses_the_same_compiled_vega_for_both_inputs() {
     assert!(vl.tikz.contains(r"\begin{tikzpicture}"));
     assert!(vl.tikz.contains(r"\pgftext"));
     assert!(!vl.tikz.contains(r"\begin{axis}"));
+
+    // The lazily loaded adapter must leave subsequent SVG requests unchanged.
+    let svg_after = converter
+        .vega_to_svg(compiled.spec, VgOpts::default(), SvgOpts::default())
+        .await
+        .unwrap();
+    assert_eq!(svg_before.svg, svg_after.svg);
+}
+
+#[tokio::test]
+async fn tikz_per_request_plugins_remain_isolated() {
+    let converter = VlConverter::with_config(VlcConfig {
+        allow_per_request_plugins: true,
+        ..Default::default()
+    })
+    .unwrap();
+    let plugin = "export default function(vega) { \
+        vega.expressionFunction('tikzLabel', () => 'plugin marker'); }";
+    let mut spec = text_spec("unused");
+    spec["transform"] = json!([{"calculate": "tikzLabel()", "as": "label"}]);
+    let compiled = converter
+        .vegalite_to_vega(spec.clone(), VlOpts::default())
+        .await
+        .unwrap();
+    let vl = converter
+        .vegalite_to_tikz(
+            spec,
+            VlOpts {
+                vega_plugin: Some(plugin.into()),
+                ..Default::default()
+            },
+            TikzOpts::default(),
+        )
+        .await
+        .unwrap();
+    let vg = converter
+        .vega_to_tikz(
+            compiled.spec.clone(),
+            VgOpts {
+                vega_plugin: Some(plugin.into()),
+                ..Default::default()
+            },
+            TikzOpts::default(),
+        )
+        .await
+        .unwrap();
+    assert!(vl.tikz.contains("plugin marker"));
+    assert_eq!(vl.tikz, vg.tikz);
+    let error = converter
+        .vega_to_tikz(compiled.spec, VgOpts::default(), TikzOpts::default())
+        .await
+        .unwrap_err();
+    assert!(error.to_string().contains("tikzLabel"), "{error}");
 }
 
 #[tokio::test]

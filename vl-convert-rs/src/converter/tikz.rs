@@ -1,5 +1,9 @@
-// Keep the same worker, plugin and font lifecycle as the existing exporters.
-use super::*;
+use super::{
+    error_with_google_font_usage, InnerVlConverter, TikzOpts, TikzOutput, ValueOrString, VgOpts,
+    VlConverter, VlOpts,
+};
+use crate::with_font_overlay;
+use deno_core::error::AnyError;
 
 impl VlConverter {
     /// Convert an evaluated Vega scenegraph to an experimental TikZ picture.
@@ -31,8 +35,8 @@ impl VlConverter {
                 .extend(font_analysis.requests);
         }
 
-        let output_result = if let Some(plugin_source) = plugin {
-            self.run_on_ephemeral_worker(plugin_source, move |inner| {
+        let output_result = self
+            .run_tikz_on_worker(plugin, move |inner| {
                 let gf = vg_opts.google_fonts.take();
                 let inner = &mut *inner;
                 Box::pin(async move {
@@ -43,21 +47,7 @@ impl VlConverter {
                     )
                 })
             })
-            .await
-        } else {
-            self.run_on_worker(move |inner| {
-                let gf = vg_opts.google_fonts.take();
-                let inner = &mut *inner;
-                Box::pin(async move {
-                    with_font_overlay!(
-                        inner,
-                        gf,
-                        inner.vega_to_tikz(vg_spec, vg_opts, tikz_opts).await
-                    )
-                })
-            })
-            .await
-        };
+            .await;
         let mut output = output_result
             .map_err(|err| error_with_google_font_usage(err, font_analysis.google_fonts.clone()))?;
         output.google_fonts.add_assign(font_analysis.google_fonts);
@@ -85,8 +75,8 @@ impl VlConverter {
                 .await?
         {
             let vg_spec: ValueOrString = vega_spec.into();
-            let output_result = if let Some(plugin_source) = plugin {
-                self.run_on_ephemeral_worker(plugin_source, move |inner| {
+            let output_result = self
+                .run_tikz_on_worker(plugin, move |inner| {
                     let gf = vg_opts.google_fonts.take();
                     let inner = &mut *inner;
                     Box::pin(async move {
@@ -97,21 +87,7 @@ impl VlConverter {
                         )
                     })
                 })
-                .await
-            } else {
-                self.run_on_worker(move |inner| {
-                    let gf = vg_opts.google_fonts.take();
-                    let inner = &mut *inner;
-                    Box::pin(async move {
-                        with_font_overlay!(
-                            inner,
-                            gf,
-                            inner.vega_to_tikz(vg_spec, vg_opts, tikz_opts).await
-                        )
-                    })
-                })
-                .await
-            };
+                .await;
             let mut output = output_result.map_err(|err| {
                 error_with_google_font_usage(err, preprocess_google_fonts.clone())
             })?;
@@ -120,21 +96,8 @@ impl VlConverter {
             output.logs = all_logs;
             output.google_fonts.add_assign(preprocess_google_fonts);
             output
-        } else if let Some(plugin_source) = plugin {
-            self.run_on_ephemeral_worker(plugin_source, move |inner| {
-                let gf = vl_opts.google_fonts.take();
-                let inner = &mut *inner;
-                Box::pin(async move {
-                    with_font_overlay!(
-                        inner,
-                        gf,
-                        inner.vegalite_to_tikz(vl_spec, vl_opts, tikz_opts).await
-                    )
-                })
-            })
-            .await?
         } else {
-            self.run_on_worker(move |inner| {
+            self.run_tikz_on_worker(plugin, move |inner| {
                 let gf = vl_opts.google_fonts.take();
                 let inner = &mut *inner;
                 Box::pin(async move {
@@ -149,5 +112,23 @@ impl VlConverter {
         };
 
         Ok(output)
+    }
+
+    // Preserve the existing worker/plugin lifecycle while keeping each TikZ
+    // conversion and its font overlay in one place. Other exporters are unchanged.
+    async fn run_tikz_on_worker(
+        &self,
+        plugin: Option<String>,
+        work: impl FnOnce(
+                &mut InnerVlConverter,
+            ) -> std::pin::Pin<
+                Box<dyn std::future::Future<Output = Result<TikzOutput, AnyError>> + '_>,
+            > + Send
+            + 'static,
+    ) -> Result<TikzOutput, AnyError> {
+        match plugin {
+            Some(source) => self.run_on_ephemeral_worker(source, work).await,
+            None => self.run_on_worker(work).await,
+        }
     }
 }

@@ -125,18 +125,8 @@ The [documentation source](docs/source/index.md) covers installation,
 configuration, each interface, output formats, fonts, plugins, and server
 operation.
 
-## Experimental TikZ Output
-
-`vegalite_to_tikz` and `vega_to_tikz`, CLI commands `vl2tikz` and `vg2tikz`,
-and the corresponding HTTP endpoints produce TeX picture fragments. Vega's
-existing Canvas renderer draws the evaluated scenegraph into a PGF/TikZ
-context, reusing its scales, layout, paths, and drawing order. The exporter
-does not construct PGFPlots axes.
-
-Labels inherit the TeX document's font family. Plain text is escaped by
-default; raw TeX/math is an explicit option. TeX is required only when compiling
-the generated fragment. See the [TikZ guide](docs/source/_topics/output-and-appearance/tikz-output.md)
-for examples, text-metric limitations, and the supported drawing features.
+The [experimental TikZ guide](docs/source/_topics/output-and-appearance/tikz-output.md)
+covers LaTeX picture export, mathematical labels, and drawing limitations.
 
 ## Development
 

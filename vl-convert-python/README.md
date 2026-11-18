@@ -8,15 +8,8 @@ converts existing SVG to PNG, JPEG, or PDF.
 The package embeds the official Vega and Vega-Lite JavaScript libraries. It
 does not require a browser, Node.js, or a separate rendering service.
 
-## Experimental TikZ Output
-
-`vega_to_tikz` and `vegalite_to_tikz` export a `tikzpicture` fragment.
-This uses Vega's evaluated scenegraph and Canvas drawing logic, with PGF/TikZ
-commands as the output. TeX is not required during export. Labels inherit the
-containing document's font family, and plain-text escaping is the default.
-See the [TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md)
-for this interface's API, raw mathematical labels, typography limits, and
-unsupported drawing features.
+For experimental LaTeX picture export, see the
+[TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md).
 
 ## Installation
 

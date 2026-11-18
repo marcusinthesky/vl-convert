@@ -1,6 +1,6 @@
 use super::InnerVlConverter;
 use crate::converter::transfer::JsonArgGuard;
-use crate::converter::types::*;
+use crate::converter::types::{TikzOpts, TikzOutput, VgOpts, VlOpts};
 use crate::converter::value_or_string::{apply_spec_overrides, ValueOrString};
 use deno_core::anyhow::bail;
 use deno_core::error::AnyError;
