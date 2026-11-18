@@ -10,6 +10,20 @@ A custom Canvas 2D implementation is used, which has two layers. `vl-convert-can
 
 Vega, the supported Vega-Lite versions, Vega Embed, themes, and locale data are embedded separately as JavaScript modules. The `vl-convert-vendor` tool downloads dependencies during updates and generates their module map. The runtime loads these modules from the binary, without requiring an internet connection.
 
+## Experimental TikZ Backend
+
+TikZ export passes a recording context to Vega's existing Canvas renderer.
+Vega draws its live scenegraph, and the context writes PGF drawing commands
+inside a `tikzpicture`. This keeps dataflow, scales, chart composition, path
+construction, text placement, and drawing order in Vega. There is no additional
+chart model or semantic translation to PGFPlots.
+
+The output remains source text until the caller compiles it in a TeX document.
+Labels use the document's font family, while Vega's earlier text measurements
+continue to determine layout. The backend reports unsupported drawing effects
+instead of silently omitting them. See the interface guides for supported
+features and text-mode options.
+
 ## Google Fonts
 
 The `vl-convert-google-fonts` crate uses Google's CSS2 API to resolve font families, weights, and styles to downloadable font files. The client supports both async and blocking callers without depending on Deno or V8.

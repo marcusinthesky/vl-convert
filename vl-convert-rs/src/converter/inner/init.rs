@@ -28,6 +28,7 @@ var msgpack;
 import('{msgpack_url}').then((imported) => {{
     msgpack = imported;
 }})
+
 "#,
                 vega_url = vega_url(),
                 vega_themes_url = vega_themes_url(),
@@ -322,6 +323,41 @@ function vegaToScenegraph(vgSpec, formatLocale, timeFormatLocale, config, errors
         })
     });
     return scenegraphPromise
+}
+
+async function vegaToTikz(vgSpec, formatLocale, timeFormatLocale, config, options, errors) {
+    // Load only for TikZ requests; the runtime caches this vendored module.
+    const tikzRenderer = await import('https://cdn.jsdelivr.net/vl-convert-tikz.js');
+    let view;
+    try {
+        if (formatLocale != null) vega.formatLocale(formatLocale);
+        if (timeFormatLocale != null) vega.timeFormatLocale(timeFormatLocale);
+        view = vegaToView(vgSpec, config, errors);
+        await view.runAsync();
+        try {
+            // Same geographic initialization workaround as the other exporters.
+            view.signal("geo_interval_init_tick", {});
+        } catch (e) {
+            // No geo_interval_init_tick signal.
+        }
+        await view.runAsync();
+        if (errors != null && errors.length > 0) throw new Error(`${errors}`);
+
+        // Reuse Vega's live scenegraph, mark geometry, ordering and clipping.
+        // No SVG serialization or Vega-Lite chart semantics are interpreted here.
+        tikzRenderer.validateTikzScenegraph(view.scenegraph().root);
+        const context = tikzRenderer.createTikzContext(options);
+        await view.toCanvas(1, {externalContext: context});
+        if (errors != null && errors.length > 0) throw new Error(`${errors}`);
+        const padding = view.padding();
+        return context.toTikz(
+            Math.max(0, view._viewWidth + padding.left + padding.right),
+            Math.max(0, view._viewHeight + padding.top + padding.bottom)
+        );
+    } finally {
+        if (view) view.finalize();
+        vega.resetDefaultLocale();
+    }
 }
 
 function vegaToCanvas(vgSpec, formatLocale, timeFormatLocale, scale, config, errors) {

@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use vl_convert_rs::converter::{
     vegalite_to_url as converter_vegalite_to_url, FontOpts, HtmlOpts, JpegOpts, PdfOpts, PngOpts,
-    Renderer, SvgOpts, UrlOpts, VlOpts, VlcConfig,
+    Renderer, SvgOpts, TikzOpts, TikzTextMode, UrlOpts, VlOpts, VlcConfig,
 };
 use vl_convert_rs::VlVersion;
 
@@ -15,7 +15,7 @@ use crate::config::AppState;
 use crate::types::{
     ErrorResponse, FontInfoResponse, VegaliteCommon, VegaliteFontsRequest, VegaliteHtmlRequest,
     VegaliteJpegRequest, VegalitePdfRequest, VegalitePngRequest, VegaliteScenegraphRequest,
-    VegaliteSvgRequest, VegaliteUrlRequest, VegaliteVegaRequest,
+    VegaliteSvgRequest, VegaliteTikzRequest, VegaliteUrlRequest, VegaliteVegaRequest,
 };
 use crate::util::{
     append_vlc_logs_header, attach_google_font_usage, conversion_error_response, error_response,
@@ -151,6 +151,68 @@ pub async fn vegalite_to_svg(
         Err(e) => conversion_error_response(
             StatusCode::UNPROCESSABLE_ENTITY,
             "Vega-Lite to SVG conversion failed",
+            &e,
+            state.opaque_errors,
+        ),
+    }
+}
+
+/// Convert a Vega-Lite specification to experimental TikZ source.
+///
+/// Labels inherit the TeX document's font family. Vega's text measurements still
+/// determine layout. Use raw text only for labels containing trusted TeX.
+#[utoipa::path(
+    post,
+    path = "/vegalite/tikz",
+    request_body = VegaliteTikzRequest,
+    responses(
+        (status = 200, body = String, content_type = "text/x-tex", description = "TikZ picture source"),
+        (status = 400, body = ErrorResponse, description = "Invalid request"),
+        (status = 422, body = ErrorResponse, description = "Conversion failed or unsupported drawing feature"),
+    ),
+    tag = "Vega-Lite"
+)]
+pub async fn vegalite_to_tikz(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<VegaliteTikzRequest>,
+) -> Response {
+    let snap = state.runtime.load_full();
+    let vl_opts = match build_vl_opts(&req.common, &snap.config) {
+        Ok(opts) => opts,
+        Err(e) => return error_response(StatusCode::BAD_REQUEST, &e, state.opaque_errors),
+    };
+    let text_mode = match TikzTextMode::from_str(req.text_mode.as_deref().unwrap_or("plain")) {
+        Ok(mode) => mode,
+        Err(e) => {
+            return error_response(StatusCode::BAD_REQUEST, &e.to_string(), state.opaque_errors)
+        }
+    };
+    let tikz_opts = TikzOpts { text_mode };
+    let spec = req.common.spec;
+
+    match snap
+        .converter
+        .vegalite_to_tikz(spec, vl_opts, tikz_opts)
+        .await
+    {
+        Ok(output) => {
+            let mut headers = HeaderMap::new();
+            append_vlc_logs_header(&mut headers, &format_log_entries(&output.logs));
+            let mut response = (
+                headers,
+                [(
+                    axum::http::header::CONTENT_TYPE,
+                    "text/x-tex; charset=utf-8",
+                )],
+                output.tikz,
+            )
+                .into_response();
+            attach_google_font_usage(&mut response, output.google_fonts);
+            response
+        }
+        Err(e) => conversion_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Vega-Lite to TikZ conversion failed",
             &e,
             state.opaque_errors,
         ),

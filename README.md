@@ -8,7 +8,7 @@ applications, and web pages. It is available as:
 - the `vl-convert` command-line interface and HTTP server
 - the `vl-convert-python` Python package
 
-For Vega and Vega-Lite charts, VlConvert produces SVG, PNG, JPEG, PDF, HTML,
+For Vega and Vega-Lite charts, VlConvert produces SVG, PNG, JPEG, PDF, experimental TikZ, HTML,
 scenegraphs, font metadata, and Vega Editor URLs. It also compiles Vega-Lite to
 Vega and converts existing SVG to PNG, JPEG, or PDF. VlConvert embeds the
 official Vega and Vega-Lite JavaScript libraries, so conversions do not require
@@ -124,6 +124,9 @@ Vega.
 The [documentation source](docs/source/index.md) covers installation,
 configuration, each interface, output formats, fonts, plugins, and server
 operation.
+
+The [experimental TikZ guide](docs/source/_topics/output-and-appearance/tikz-output.md)
+covers LaTeX picture export, mathematical labels, and drawing limitations.
 
 ## Development
 

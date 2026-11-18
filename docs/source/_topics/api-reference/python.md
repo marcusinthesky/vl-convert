@@ -12,7 +12,7 @@ interfaces: [python]
 
 This page documents the synchronous `vl_convert` module. For `vl_convert.asyncio`, see {doc}`async-api-reference`.
 
-These entries are generated from the version 2 type stubs. Vega and Vega-Lite specifications may be passed as JSON strings or dictionaries. PNG, JPEG, and PDF functions return `bytes`. SVG, HTML, and URL functions return `str`. Scenegraph functions return a `dict` by default, or MessagePack `bytes` with `format="msgpack"`.
+These entries are generated from the version 2 type stubs. Vega and Vega-Lite specifications may be passed as JSON strings or dictionaries. PNG, JPEG, and PDF functions return `bytes`. SVG, TikZ, HTML, and URL functions return `str`. Scenegraph functions return a `dict` by default, or MessagePack `bytes` with `format="msgpack"`.
 
 Start with {doc}`getting-started/quick-start` if you are choosing a conversion function for the first time.
 
@@ -28,6 +28,9 @@ Start with {doc}`getting-started/quick-start` if you are choosing a conversion f
 ```
 
 ```{autodoc2-object} vl_convert.vegalite_to_svg
+```
+
+```{autodoc2-object} vl_convert.vegalite_to_tikz
 ```
 
 ```{autodoc2-object} vl_convert.vegalite_to_html
@@ -54,6 +57,9 @@ Start with {doc}`getting-started/quick-start` if you are choosing a conversion f
 ```
 
 ```{autodoc2-object} vl_convert.vega_to_svg
+```
+
+```{autodoc2-object} vl_convert.vega_to_tikz
 ```
 
 ```{autodoc2-object} vl_convert.vega_to_html

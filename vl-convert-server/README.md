@@ -1,8 +1,11 @@
 # vl-convert-server
 
 Library crate for serving Vega-Lite and Vega conversions over HTTP. It wraps
-`vl-convert-rs` with an axum-based REST API for SVG, PNG, PDF, JPEG, HTML,
+`vl-convert-rs` with an axum-based REST API for SVG, PNG, PDF, JPEG, experimental TikZ, HTML,
 scenegraph, theme, font, and JavaScript-bundling operations.
+
+For experimental LaTeX picture export, see the
+[TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md).
 
 This crate does not publish a `vl-convert-server` binary. The `vl-convert`
 package provides `vl-convert serve` as the reference binary built on this

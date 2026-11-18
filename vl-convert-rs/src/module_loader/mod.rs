@@ -60,6 +60,9 @@ impl ModuleLoader for VlConvertModuleLoader {
         let code = if string_specifier.ends_with("vl-convert-rs.js") {
             // Load the required main module as an empty file.
             "".to_string()
+        } else if string_specifier == "https://cdn.jsdelivr.net/vl-convert-tikz.js" {
+            // Local renderer module; its only dependency is already vendored.
+            include_str!("../js/tikz.js").to_string()
         } else {
             let path = module_specifier.path();
             let path = path.strip_prefix(JSDELIVR_URL).unwrap_or(path);

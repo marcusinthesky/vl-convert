@@ -1,0 +1,20 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "width": 250,
+  "height": 85,
+  "padding": 12,
+  "autosize": "none",
+  "background": "white",
+  "marks": [
+    {"type": "text", "encode": {"enter": {
+      "x": {"value": 5}, "y": {"value": 25}, "align": {"value": "left"},
+      "text": {"value": "$\\alpha_1 + \\beta_2 = \\gamma$"},
+      "fontSize": {"value": 16}, "fill": {"value": "#333333"}
+    }}},
+    {"type": "text", "encode": {"enter": {
+      "x": {"value": 5}, "y": {"value": 60}, "align": {"value": "left"},
+      "text": {"value": "$\\hat{\\theta} \\pm 1.96\\,\\mathrm{SE}$"},
+      "fontSize": {"value": 15}, "fill": {"value": "#4c78a8"}
+    }}}
+  ]
+}

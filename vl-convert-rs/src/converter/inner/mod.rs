@@ -4,6 +4,7 @@ pub(crate) use fonts::resolve_google_fonts;
 mod init;
 mod rendering;
 mod runtime;
+mod tikz;
 
 use crate::deno_stubs::{NoOpInNpmPackageChecker, NoOpNpmPackageFolderResolver, VlConvertNodeSys};
 use crate::module_loader::import_map::VlVersion;

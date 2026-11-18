@@ -1,12 +1,15 @@
 # vl-convert-python
 
 `vl-convert-python` converts Vega-Lite, Vega, and SVG input from Python. For
-Vega and Vega-Lite charts, it produces SVG, PNG, JPEG, PDF, HTML, scenegraphs,
+Vega and Vega-Lite charts, it produces SVG, PNG, JPEG, PDF, experimental TikZ, HTML, scenegraphs,
 font metadata, and Vega Editor URLs. It also compiles Vega-Lite to Vega and
 converts existing SVG to PNG, JPEG, or PDF.
 
 The package embeds the official Vega and Vega-Lite JavaScript libraries. It
 does not require a browser, Node.js, or a separate rendering service.
+
+For experimental LaTeX picture export, see the
+[TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md).
 
 ## Installation
 

@@ -3,10 +3,13 @@
 This crate provides a self-contained Rust library for converting
 [Vega-Lite](https://vega.github.io/vega-lite/),
 [Vega](https://vega.github.io/vega/), and SVG input. For Vega and Vega-Lite
-charts, it produces SVG, PNG, JPEG, PDF, HTML, scenegraphs, font metadata, and
+charts, it produces SVG, PNG, JPEG, PDF, experimental TikZ, HTML, scenegraphs, font metadata, and
 Vega Editor URLs. It also compiles Vega-Lite to Vega and converts existing SVG
 to PNG, JPEG, or PDF. The conversions run the official Vega and Vega-Lite
 JavaScript libraries in an embedded V8 runtime.
+
+For experimental LaTeX picture export, see the
+[TikZ guide](../docs/source/_topics/output-and-appearance/tikz-output.md).
 
 This crate is the conversion engine for the
 [`vl-convert`](https://crates.io/crates/vl-convert) CLI and server and the

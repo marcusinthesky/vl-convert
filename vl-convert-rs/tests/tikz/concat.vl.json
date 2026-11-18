@@ -1,0 +1,36 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "data": {"values": [
+    {"panel": "Left", "kind": "A", "x": 1, "y": 2},
+    {"panel": "Left", "kind": "B", "x": 3, "y": 4},
+    {"panel": "Right", "kind": "B", "x": 8, "y": 3},
+    {"panel": "Right", "kind": "C", "x": 10, "y": 6}
+  ]},
+  "hconcat": [
+    {
+      "title": "Left",
+      "width": 120,
+      "height": 120,
+      "transform": [{"filter": "datum.panel === 'Left'"}],
+      "mark": {"type": "point", "filled": true, "size": 90},
+      "encoding": {
+        "x": {"field": "x", "type": "quantitative"},
+        "y": {"field": "y", "type": "quantitative"},
+        "color": {"field": "kind", "type": "nominal"}
+      }
+    },
+    {
+      "title": "Right",
+      "width": 120,
+      "height": 120,
+      "transform": [{"filter": "datum.panel === 'Right'"}],
+      "mark": {"type": "point", "filled": true, "size": 90},
+      "encoding": {
+        "x": {"field": "x", "type": "quantitative"},
+        "y": {"field": "y", "type": "quantitative"},
+        "color": {"field": "kind", "type": "nominal"}
+      }
+    }
+  ],
+  "resolve": {"scale": {"x": "shared", "y": "shared", "color": "shared"}}
+}

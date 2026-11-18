@@ -1,0 +1,24 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "title": "Curves, points & reference rule",
+  "width": 260,
+  "height": 150,
+  "data": {"values": [
+    {"x": 0, "y": 1}, {"x": 1, "y": 3}, {"x": 2, "y": 2},
+    {"x": 3, "y": 5}, {"x": 4, "y": 4}, {"x": 5, "y": 6}
+  ]},
+  "encoding": {
+    "x": {"field": "x", "type": "quantitative"},
+    "y": {"field": "y", "type": "quantitative"}
+  },
+  "layer": [
+    {"mark": {"type": "area", "interpolate": "monotone", "opacity": 0.2}},
+    {"mark": {"type": "line", "interpolate": "monotone", "strokeWidth": 2}},
+    {"mark": {"type": "point", "filled": true, "shape": "diamond", "size": 65}},
+    {
+      "transform": [{"aggregate": [{"op": "mean", "field": "y", "as": "mean_y"}]}],
+      "mark": {"type": "rule", "stroke": "#b24b46", "strokeDash": [5, 3]},
+      "encoding": {"x": {"value": 0}, "y": {"field": "mean_y", "type": "quantitative"}}
+    }
+  ]
+}

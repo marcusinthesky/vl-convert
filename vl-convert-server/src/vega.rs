@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use vl_convert_rs::converter::{
     vega_to_url as converter_vega_to_url, FontOpts, HtmlOpts, JpegOpts, PdfOpts, PngOpts, Renderer,
-    SvgOpts, UrlOpts, VgOpts, VlcConfig,
+    SvgOpts, TikzOpts, TikzTextMode, UrlOpts, VgOpts, VlcConfig,
 };
 
 use crate::accept::{preferred_scenegraph_format, ScenegraphFormat};
@@ -14,7 +14,7 @@ use crate::config::AppState;
 use crate::types::{
     ErrorResponse, FontInfoResponse, VegaCommon, VegaFontsRequest, VegaHtmlRequest,
     VegaJpegRequest, VegaPdfRequest, VegaPngRequest, VegaScenegraphRequest, VegaSvgRequest,
-    VegaUrlRequest,
+    VegaTikzRequest, VegaUrlRequest,
 };
 use crate::util::{
     append_vlc_logs_header, attach_google_font_usage, conversion_error_response, error_response,
@@ -76,6 +76,64 @@ pub async fn vega_to_svg(
         Err(e) => conversion_error_response(
             StatusCode::UNPROCESSABLE_ENTITY,
             "Vega to SVG conversion failed",
+            &e,
+            state.opaque_errors,
+        ),
+    }
+}
+
+/// Convert a Vega specification to experimental TikZ source.
+///
+/// Labels inherit the TeX document's font family. Vega's text measurements still
+/// determine layout. Use raw text only for labels containing trusted TeX.
+#[utoipa::path(
+    post,
+    path = "/vega/tikz",
+    request_body = VegaTikzRequest,
+    responses(
+        (status = 200, body = String, content_type = "text/x-tex", description = "TikZ picture source"),
+        (status = 400, body = ErrorResponse, description = "Invalid request"),
+        (status = 422, body = ErrorResponse, description = "Conversion failed or unsupported drawing feature"),
+    ),
+    tag = "Vega"
+)]
+pub async fn vega_to_tikz(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<VegaTikzRequest>,
+) -> Response {
+    let snap = state.runtime.load_full();
+    let vg_opts = match build_vg_opts(&req.common, &snap.config) {
+        Ok(opts) => opts,
+        Err(e) => return error_response(StatusCode::BAD_REQUEST, &e, state.opaque_errors),
+    };
+    let text_mode = match TikzTextMode::from_str(req.text_mode.as_deref().unwrap_or("plain")) {
+        Ok(mode) => mode,
+        Err(e) => {
+            return error_response(StatusCode::BAD_REQUEST, &e.to_string(), state.opaque_errors)
+        }
+    };
+    let tikz_opts = TikzOpts { text_mode };
+    let spec = req.common.spec;
+
+    match snap.converter.vega_to_tikz(spec, vg_opts, tikz_opts).await {
+        Ok(output) => {
+            let mut headers = HeaderMap::new();
+            append_vlc_logs_header(&mut headers, &format_log_entries(&output.logs));
+            let mut response = (
+                headers,
+                [(
+                    axum::http::header::CONTENT_TYPE,
+                    "text/x-tex; charset=utf-8",
+                )],
+                output.tikz,
+            )
+                .into_response();
+            attach_google_font_usage(&mut response, output.google_fonts);
+            response
+        }
+        Err(e) => conversion_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Vega to TikZ conversion failed",
             &e,
             state.opaque_errors,
         ),

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "width": 290,
+  "height": 180,
+  "padding": 10,
+  "autosize": "none",
+  "background": "white",
+  "data": [
+    {"name": "trail", "values": [
+      {"x": 10, "y": 150, "s": 2}, {"x": 45, "y": 130, "s": 6},
+      {"x": 90, "y": 160, "s": 12}, {"x": 130, "y": 140, "s": 3}
+    ]}
+  ],
+  "marks": [
+    {"type": "group", "encode": {"enter": {
+      "x": {"value": 5}, "y": {"value": 5},
+      "width": {"value": 100}, "height": {"value": 65},
+      "clip": {"value": true}, "cornerRadius": {"value": 9},
+      "stroke": {"value": "#666666"}, "strokeForeground": {"value": true},
+      "fill": {"value": "#f2f2f2"}
+    }}, "marks": [
+      {"type": "rect", "encode": {"enter": {
+        "x": {"value": -8}, "y": {"value": 15},
+        "width": {"value": 120}, "height": {"value": 35},
+        "fill": {"value": "#4c78a8"}, "opacity": {"value": 0.7}
+      }}},
+      {"type": "rule", "encode": {"enter": {
+        "x": {"value": 0}, "x2": {"value": 110},
+        "y": {"value": 30}, "y2": {"value": 55},
+        "stroke": {"value": "#b24b46"}, "strokeWidth": {"value": 3},
+        "strokeDash": {"value": [5, 3]}, "strokeCap": {"value": "round"}
+      }}}
+    ]},
+    {"type": "arc", "encode": {"enter": {
+      "x": {"value": 150}, "y": {"value": 42},
+      "startAngle": {"value": 0.2}, "endAngle": {"value": 5.1},
+      "innerRadius": {"value": 13}, "outerRadius": {"value": 33},
+      "cornerRadius": {"value": 4}, "fill": {"value": "#f2a541"}
+    }}},
+    {"type": "symbol", "encode": {"enter": {
+      "x": {"value": 220}, "y": {"value": 40},
+      "shape": {"value": "diamond"}, "size": {"value": 650},
+      "angle": {"value": 30}, "fill": {"value": "#4c956c"},
+      "stroke": {"value": "#274c39"}, "strokeWidth": {"value": 2}
+    }}},
+    {"type": "path", "encode": {"enter": {
+      "x": {"value": 180}, "y": {"value": 100}, "angle": {"value": -12},
+      "scaleX": {"value": 1.2}, "scaleY": {"value": 0.8},
+      "path": {"value": "M0,0 Q20,-25 40,0 T80,0 A10,15 0 0 1 90,20 L0,20 Z"},
+      "fill": {"value": "#ad81bb"}, "stroke": {"value": "#57415e"},
+      "strokeWidth": {"value": 1.5}
+    }}},
+    {"type": "trail", "from": {"data": "trail"}, "encode": {"enter": {
+      "x": {"field": "x"}, "y": {"field": "y"}, "size": {"field": "s"},
+      "fill": {"value": "#4c78a8"}
+    }}},
+    {"type": "text", "encode": {"enter": {
+      "x": {"value": 10}, "y": {"value": 105}, "align": {"value": "left"},
+      "text": {"value": "Clip & dash"}, "fontSize": {"value": 13},
+      "fontWeight": {"value": "bold"}, "fill": {"value": "#333333"}
+    }}}
+  ]
+}

@@ -210,6 +210,18 @@ pub struct VegaliteSvgRequest {
     pub bundle: bool,
 }
 
+/// Experimental scenegraph-to-TikZ export request.
+#[derive(Debug, Deserialize, ToSchema)]
+#[serde(deny_unknown_fields)]
+pub struct VegaliteTikzRequest {
+    #[serde(flatten)]
+    pub common: VegaliteCommon,
+    /// Label handling: "plain" (default) escapes TeX; "raw" preserves trusted TeX.
+    /// This generates source only and never runs a TeX engine.
+    #[schema(example = "plain")]
+    pub text_mode: Option<String>,
+}
+
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct VegalitePngRequest {
@@ -276,6 +288,18 @@ pub struct VegaSvgRequest {
     /// Bundle fonts and images into a self-contained SVG.
     #[serde(default)]
     pub bundle: bool,
+}
+
+/// Experimental scenegraph-to-TikZ export request.
+#[derive(Debug, Deserialize, ToSchema)]
+#[serde(deny_unknown_fields)]
+pub struct VegaTikzRequest {
+    #[serde(flatten)]
+    pub common: VegaCommon,
+    /// Label handling: "plain" (default) escapes TeX; "raw" preserves trusted TeX.
+    /// This generates source only and never runs a TeX engine.
+    #[schema(example = "plain")]
+    pub text_mode: Option<String>,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
