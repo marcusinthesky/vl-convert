@@ -38,6 +38,12 @@ family; its glyph widths can differ from Vega's measured widths. The wrappers
 intentionally use a normal LaTeX font so this limitation remains visible.
 Neither raw math nor a change of document font causes Vega to recompute layout.
 
+These Node tests exercise the bundled drawing code with Vega's headless text
+measurement fallback. Typography assessment should also compare SVG/PDF and
+TikZ generated through the public Rust or Python API, which uses vl-convert's
+native font measurement. A successful TeX compilation alone does not establish
+visual fidelity or full gallery coverage.
+
 One CSS pixel is exported as `0.75bp`. The manifest records the expected PDF
 dimensions, which can be checked with `pdfinfo` alongside a visual review of
 the PDF and SVG. The fixtures are test inputs, not a claim that every Vega

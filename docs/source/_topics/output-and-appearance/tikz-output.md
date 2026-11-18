@@ -160,12 +160,15 @@ Set `"text_mode": "raw"` beside `spec` in the request body.
 
 Raw mode preserves label content as TeX source. It is a document-authoring
 option; use it only for text you trust to compile. Any macros or packages used
-by those labels must be defined in the containing document.
+by those labels must be defined in the containing document. This mode applies
+to every label, including generated ticks and legends; literal TeX special
+characters in those labels must also be escaped.
 
-Labels inherit the containing document's font family. The exporter applies
-Vega's font sizes and supported bold, italic, and small-caps styling. Registering or downloading a font for
-Vega controls its text measurement; it does not embed that font in the TeX
-source or select it in LaTeX.
+Labels inherit the containing document's text font family, and mathematical
+expressions use its math-font configuration. The exporter applies Vega's font
+sizes and supported bold, italic, and small-caps styling. Registering or
+downloading a font for Vega controls its text measurement; it does not embed
+that font in the TeX source or select it in LaTeX.
 
 Vega lays out the chart before TeX sees the labels. A different document font,
 Unicode font, or mathematical expression can have different metrics, so labels
@@ -186,9 +189,11 @@ gradient fills are retained.
 
 The following features currently return errors: images, pattern fills, radial
 gradients, gradient strokes or text, blend modes other than `source-over`,
-stroked text, and combined italic/small-caps styling. Vega rasterizes some diagonal linear gradients in nonsquare bounds into
-patterns; those are unsupported too. Gradient stops with differing opacity or repeated offsets are
-also unsupported. There is no automatic raster fallback or implicit asset file.
+stroked text, and combined italic/small-caps styling. Vega rasterizes some
+diagonal linear gradients in nonsquare bounds into patterns; those are
+unsupported too. Gradient stops with differing opacity or repeated offsets,
+and nonuniform Canvas transforms for strokes or gradients, are unsupported.
+There is no automatic raster fallback or implicit asset file.
 
 These limits describe drawing operations, rather than a list of supported
 Vega-Lite encodings. They keep the exporter at the same scenegraph rendering

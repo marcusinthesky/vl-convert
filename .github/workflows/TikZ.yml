@@ -40,7 +40,7 @@ jobs:
           if-no-files-found: ignore
 
   api:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       RUST_MIN_STACK: 8388608
       CARGO_PROFILE_DEV_DEBUG: "0"
